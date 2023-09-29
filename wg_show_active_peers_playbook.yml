@@ -1,0 +1,18 @@
+---
+- name: SHOW PEERS CONNECTED TO SERVER
+  hosts: {{inventory}}
+  become: true
+  tasks:
+    - name: WG PEERS
+      shell: wg | grep -B 5 transfer
+      register: results
+    - name: SHOW ACTIVE WG PEERS
+      debug:
+            var: results.stdout_lines
+    - name: echo results to temp file
+      copy:
+        content: "{{results.stdout}}"
+        dest: /home/{{ansible_user}}/transfer.now
+
+    - name: download temp file to local machine
+      fetch: src=/home/{{ansible_user}}/transfer.now dest=/home/YOUR-USER/wireguard/

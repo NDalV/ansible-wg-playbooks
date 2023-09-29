@@ -1,0 +1,27 @@
+---
+- name: upload new wireguard CONFIG on wireguard server
+  hosts: {{inventory}}
+  become: true
+
+  tasks:
+   - copy: src={{ item }} dest=/etc/wireguard/ mode='0744'
+     with_fileglob:
+      - "/home/YOUR-USER/wireguard/*"
+   - name : reload wg for active new config
+     shell: wg syncconf {{item}} <(wg-quick strip {{item}})
+     args:
+        executable: /bin/bash
+        chdir: /etc/wireguard/
+     loop:
+         - wg1
+         - wg2
+         - wg3
+
+   - name: ASK WG SERVER ABOUT ACTIVE WG INTERFACES
+     shell: wg | grep interface
+     register: results
+   - name: SHOW ACTIVE WG INTERFACES
+     debug:
+           var: results.stdout_lines
+
+
